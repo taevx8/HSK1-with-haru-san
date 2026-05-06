@@ -147,13 +147,13 @@ header{background:var(--ink);color:var(--paper);padding:1rem 1.5rem;position:sti
 .sb-wrap{background:rgba(21,101,192,.05);border:1px solid rgba(21,101,192,.15);border-radius:10px;padding:1rem;margin-bottom:1rem;}
 .sb-label{font-family:'DM Mono',monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.15em;color:var(--blue);margin-bottom:.75rem;}
 .sb-slots{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin-bottom:.75rem;min-height:44px;}
-.sb-slot{background:var(--paper);border:2px dashed var(--border);border-radius:6px;min-width:60px;padding:.35rem .6rem;text-align:center;font-family:'Noto Serif SC',serif;font-size:.95rem;color:var(--muted);transition:all .25s;cursor:pointer;}
+.sb-slot{background:var(--paper);border:2px dashed var(--border);border-radius:6px;min-width:60px;padding:.35rem .6rem;text-align:center;color:var(--muted);transition:all .25s;cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center;}
 .sb-slot.filled{border-color:var(--green);background:rgba(46,125,50,.06);color:var(--ink);}
 .sb-slot.correct-slot{border-color:var(--green);background:rgba(46,125,50,.12);color:var(--green);}
 .sb-slot.wrong-slot{border-color:var(--red);background:rgba(192,57,43,.06);animation:shake .3s;}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .sb-choices{display:flex;flex-wrap:wrap;gap:.4rem;}
-.sb-chip{background:var(--cream);border:1px solid var(--border);border-radius:20px;padding:.28rem .7rem;cursor:pointer;font-family:'Noto Serif SC',serif;font-size:.9rem;transition:all .2s;user-select:none;}
+.sb-chip{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:.3rem .8rem;cursor:pointer;transition:all .2s;user-select:none; display:flex; flex-direction:column; align-items:center; justify-content:center;}
 .sb-chip:hover{border-color:var(--red);color:var(--red);}
 .sb-chip.used{opacity:.3;pointer-events:none;}
 .sb-feedback{font-size:.88rem;min-height:1.4rem;margin-top:.3rem;font-weight:bold;}
@@ -169,7 +169,7 @@ header{background:var(--ink);color:var(--paper);padding:1rem 1.5rem;position:sti
 .fitb-blank.correct{border-color:var(--green);color:var(--green);}
 .fitb-blank.wrong{border-color:var(--red);color:var(--red);}
 .fitb-opts{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem;}
-.fitb-opt{background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:.25rem .65rem;cursor:pointer;font-family:'Noto Serif SC',serif;font-size:.9rem;transition:all .2s;}
+.fitb-opt{background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:.35rem .8rem;cursor:pointer;transition:all .2s; display:flex; flex-direction:column; align-items:center; justify-content:center;}
 .fitb-opt:hover{border-color:var(--blue);color:var(--blue);}
 .fitb-opt.correct{background:rgba(46,125,50,.15);border-color:var(--green);color:var(--green);}
 .fitb-opt.wrong{background:rgba(192,57,43,.1);border-color:var(--red);color:var(--red);}
@@ -179,6 +179,12 @@ header{background:var(--ink);color:var(--paper);padding:1rem 1.5rem;position:sti
 .gram-ex-hz{font-family:'Noto Serif SC',serif;font-size:1.1rem;font-weight:bold;color:var(--ink);}
 .gram-ex-py{color:var(--red);font-style:italic;font-size:.88rem;}
 .gram-ex-en{color:var(--muted);font-size:.85rem;}
+
+/* 🔴 الكلاسات الجديدة للرموز والبينين في القواعد 🔴 */
+.sb-hz, .fitb-hz { font-family:'Noto Serif SC',serif; font-size:1.1rem; font-weight:bold; color:var(--ink); line-height:1; }
+.gram-py { font-family:'Crimson Pro',serif; color:var(--red); font-style:italic; font-size:.85rem; margin-top:.25rem; transition:opacity .2s; }
+.gram-py.hidden { display: none !important; }
+
 
 /* DASHBOARD */
 #dashPage .dash-title{font-family:'Noto Serif SC',serif;font-size:1.6rem;color:var(--ink);margin-bottom:1.25rem;}
@@ -330,9 +336,14 @@ header{background:var(--ink);color:var(--paper);padding:1rem 1.5rem;position:sti
 </div>
 
 <!-- GRAMMAR PAGE -->
-<div id="grammarPage" class="page">
-  <h2 class="page-title">Grammar Lessons — HSK 1</h2>
+  
+  <div id="grammarPage" class="page">
+  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--border); margin-bottom:1.25rem; padding-bottom:.6rem;">
+    <h2 class="page-title" style="border:none; margin:0; padding:0;">Grammar Lessons — HSK 1</h2>
+    <button id="gramPyToggle" class="cat-btn" onclick="toggleGrammarPy()">👁 Hide Pinyin</button>
+  </div>
   <div class="gram-grid" id="grammarList"></div>
+</div>
 </div>
 
 <!-- DICTATION PAGE -->
@@ -928,6 +939,14 @@ const stories = [
    ]}
 ];
 
+// دالة ذكية لسحب البينين تلقائياً من مكتبة الكلمات
+function getPy(word) {
+  if (!word || ['，','？','！','。'].includes(word)) return '';
+  const w = hsk1.find(x => x.hanzi === word);
+  return w ? w.pinyin : '';
+}
+
+
 // ════ STATE ════
 let mastered = JSON.parse(localStorage.getItem('hsk1_mastered')||'[]');
 let srsData   = JSON.parse(localStorage.getItem('hsk1_srs')||'{}');
@@ -1156,7 +1175,12 @@ function renderGrammar(){
           </div>
           <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem;">${g.sb.labels.filter(l=>l).join(' → ')}</div>
           <div class="sb-choices" id="${sbId}_chips">
-            ${[...g.sb.choices].sort(()=>Math.random()-.5).map((c,i)=>`<div class="sb-chip" data-word="${c}" onclick="sbClick('${sbId}','${c}',this,'${JSON.stringify(g.sb.answer).replace(/"/g,"'")}')"> ${c}</div>`).join('')}
+          ${[...g.sb.choices].sort(()=>Math.random()-.5).map((c,i)=>`
+          <div class="sb-chip" data-word="${c}" onclick="sbClick('${sbId}','${c}',this,'${g.id}')">
+          <div class="sb-hz">${c}</div>
+          <div class="gram-py ${showGramPy?'':'hidden'}">${getPy(c)}</div>
+          </div>`).join('')}
+          </div>
           </div>
           <div class="sb-feedback" id="${sbId}_fb"></div>
           <button class="sb-reset" onclick="resetSB('${sbId}','${JSON.stringify(g.sb.slots).replace(/"/g,"'")}','${JSON.stringify(g.sb.choices).replace(/"/g,"'")}','${JSON.stringify(g.sb.answer).replace(/"/g,"'")}')">↺ Reset</button>
@@ -1169,8 +1193,12 @@ function renderGrammar(){
           </div>
           <div style="font-size:.8rem;color:var(--muted);margin-bottom:.5rem;">Translation: "${g.fitb.translation}"</div>
           <div class="fitb-opts">
-            ${g.fitb.opts.map(o=>`<button class="fitb-opt" onclick="fillBlank('${fitbId}','${o}')">${o}</button>`).join('')}
-          </div>
+                ${g.fitb.opts.map(o=>`
+                  <button class="fitb-opt" onclick="fillBlank('${fitbId}','${o}')">
+                    <div class="fitb-hz">${o}</div>
+                    <div class="gram-py ${showGramPy?'':'hidden'}">${getPy(o)}</div>
+                  </button>`).join('')}
+              </div>
           <button class="fitb-check" onclick="checkFitb('${fitbId}','${g.fitb.answer}','${g.fitb.translation}')">Check ✓</button>
           <div style="margin-top:.5rem;min-height:1.4rem;font-size:.9rem;font-weight:bold;" id="${fitbId}_fb"></div>
         </div>
@@ -1195,10 +1223,21 @@ function sbClick(id,word,chip,answerJson){
   sbState[id][empty]=word;
   chip.classList.add('used');
   const slot=slots[empty];
-  slot.textContent=word;
+  slot.innerHTML = `<div class="sb-hz">${word}</div><div class="gram-py ${showGramPy?'':'hidden'}">${getPy(word)}</div>`;
   slot.classList.add('filled');
   checkSBAnswer(id,answer,slots);
 }
+
+let showGramPy = true;
+function toggleGrammarPy() {
+  showGramPy = !showGramPy;
+  const btn = document.getElementById('gramPyToggle');
+  if(btn) btn.textContent = showGramPy ? '👁 Hide Pinyin' : '👁 Show Pinyin';
+  document.querySelectorAll('.gram-ex-py, .gram-py').forEach(el => {
+    if(showGramPy) el.classList.remove('hidden'); else el.classList.add('hidden');
+  });
+}
+
 
 function sbRemove(id,pos){
   if(!sbState[id]||!sbState[id][pos]) return;
@@ -1226,19 +1265,27 @@ function checkSBAnswer(id,answer,slots){
   fb.className='sb-feedback '+(allCorrect?'ok':'err');
 }
 
-function resetSB(id,slotsJson,choicesJson,answerJson){
-  const slots=JSON.parse(slotsJson.replace(/'/g,'"'));
-  const choices=JSON.parse(choicesJson.replace(/'/g,'"'));
+function resetSB(id,grammarId){
+  const rule = grammarData.find(g => g.id === parseInt(grammarId));
   sbState[id]=[];
   const slotsEl=document.querySelectorAll(`#${id}_slots .sb-slot`);
   slotsEl.forEach((s,i)=>{
-    s.innerHTML=slots[i]==='，'||slots[i]==='？'||slots[i]==='！'?slots[i]:'<span style="opacity:.4;font-size:.8rem;">?</span>';
+    s.innerHTML=rule.sb.slots[i]==='，'||rule.sb.slots[i]==='？'||rule.sb.slots[i]==='！'?rule.sb.slots[i]:'<span style="opacity:.4;font-size:.8rem;">?</span>';
     s.classList.remove('filled','correct-slot','wrong-slot');
   });
+  
   const chipsWrap=document.getElementById(id+'_chips');
-  chipsWrap.innerHTML=[...choices].sort(()=>Math.random()-.5).map(c=>`<div class="sb-chip" data-word="${c}" onclick="sbClick('${id}','${c}',this,'${JSON.stringify(JSON.parse(answerJson.replace(/'/g,'"'))).replace(/"/g,"'")}')"> ${c}</div>`).join('');
+  chipsWrap.innerHTML=[...rule.sb.choices].sort(()=>Math.random()-.5).map(c=>
+    `<div class="sb-chip" data-word="${c}" onclick="sbClick('${id}','${c}',this,'${grammarId}')">
+       <div class="sb-hz">${c}</div>
+       <div class="gram-py ${showGramPy?'':'hidden'}">${getPy(c)}</div>
+     </div>`
+  ).join('');
+  
   document.getElementById(id+'_fb').textContent='';
 }
+
+
 
 function fillBlank(id,word){document.getElementById(id+'_inp').value=word;}
 function checkFitb(id,answer,translation){

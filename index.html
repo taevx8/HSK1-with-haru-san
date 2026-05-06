@@ -50,16 +50,16 @@ header{background:var(--ink);color:var(--paper);padding:1rem 1.5rem;position:sti
 /* FLASHCARD 3D FLIP */
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.1rem;}
 .cards-grid.list-view{grid-template-columns:1fr;gap:.6rem;}
-.flashcard{perspective:1000px;cursor:pointer;min-height:200px;}
-.flashcard-inner{position:relative;width:100%;min-height:200px;transition:transform .65s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
+.flashcard{perspective:1000px;cursor:pointer;min-height:280px;}
+.flashcard-inner{position:relative;width:100%;min-height:280px;transition:transform .65s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d;}
 .flashcard.flipped .flashcard-inner{transform:rotateY(180deg);}
-.fc-front,.fc-back{position:absolute;width:100%;min-height:200px;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:12px;}
+.fc-front,.fc-back{position:absolute;width:100%;min-height:280px;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:12px;}
 .fc-front{background:var(--card);border:1px solid var(--border);box-shadow:0 2px 10px var(--shadow);transition:all .3s;}
 .fc-back{transform:rotateY(180deg);background:linear-gradient(135deg,#1a1008,#2d1f10);color:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem;gap:.4rem;border-radius:12px;}
 .flashcard:hover .fc-front{border-color:var(--gold);box-shadow:0 8px 28px var(--shadow-d);transform:translateY(-3px);}
 .flashcard.mastered .fc-front{border-color:var(--green);background:linear-gradient(135deg,var(--card),rgba(46,125,50,.05));}
 .flashcard.mastered .fc-front::after{content:'✓';position:absolute;top:.5rem;right:.65rem;color:var(--green);font-size:.8rem;font-weight:bold;}
-.fc-inner-content{padding:1.4rem 1rem;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:.4rem;}
+.fc-inner-content{padding:1.4rem 1rem;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;gap:.4rem;}
 .lesson-tag{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--border);position:absolute;top:.45rem;left:.55rem;}
 .hanzi-big{font-family:'Noto Serif SC',serif;font-size:3rem;font-weight:700;color:var(--ink);line-height:1;transition:color .2s;}
 .flashcard:hover .hanzi-big{color:var(--red);}
@@ -1030,8 +1030,6 @@ function renderCards(){
           <div class="fc-inner-content">
             <span class="lesson-tag">L${w.lesson} · ${w.category}</span>
             <div class="hanzi-big">${w.hanzi}</div>
-            <div class="pinyin-sm">${w.pinyin}</div>
-            <div class="meaning-sm">${w.meaning}</div>
             <div class="flip-hint">👆 tap to flip</div>
           </div>
         </div>

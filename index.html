@@ -1133,6 +1133,8 @@ function doSRS(grade){
   closeModal();renderCards();
 }
 
+
+
 // ════ GRAMMAR ════
 function renderGrammar(){
   const list=document.getElementById('grammarList');
@@ -1145,7 +1147,7 @@ function renderGrammar(){
         <button class="speak-btn" style="flex-shrink:0;" onclick="speak('${ex.h}')">🔊</button>
         <div>
           <div class="gram-ex-hz">${ex.h}</div>
-          <div class="gram-ex-py">${ex.p}</div>
+          <div class="gram-ex-py ${showGramPy?'':'hidden'}">${ex.p}</div>
           <div class="gram-ex-en">${ex.e}</div>
         </div>
       </div>`).join('');
@@ -1164,8 +1166,9 @@ function renderGrammar(){
       <div class="gram-body">
         <div class="gram-struct">${g.struct}</div>
         <p style="font-size:.95rem;line-height:1.65;color:var(--ink);margin-bottom:1rem;">${g.desc}</p>
+        
         <div class="det-lbl">Examples</div>
-        <div style="margin-bottom:1rem;">${exHtml}</div>
+        <div style="margin-bottom:1.5rem;">${exHtml}</div>
 
         <div class="sb-wrap" id="${sbId}">
           <div class="sb-label">🧩 Sentence Builder — Put the words in order!</div>
@@ -1174,15 +1177,14 @@ function renderGrammar(){
           </div>
           <div style="font-size:.75rem;color:var(--muted);margin-bottom:.5rem;">${g.sb.labels.filter(l=>l).join(' → ')}</div>
           <div class="sb-choices" id="${sbId}_chips">
-          ${[...g.sb.choices].sort(()=>Math.random()-.5).map((c,i)=>`
-          <div class="sb-chip" data-word="${c}" onclick="sbClick('${sbId}','${c}',this,'${g.id}')">
-          <div class="sb-hz">${c}</div>
-          <div class="gram-py ${showGramPy?'':'hidden'}">${getPy(c)}</div>
-          </div>`).join('')}
-          </div>
+            ${[...g.sb.choices].sort(()=>Math.random()-.5).map((c,i)=>`
+              <div class="sb-chip" data-word="${c}" onclick="sbClick('${sbId}','${c}',this,'${g.id}')">
+                <div class="sb-hz">${c}</div>
+                <div class="gram-py ${showGramPy?'':'hidden'}">${getPy(c)}</div>
+              </div>`).join('')}
           </div>
           <div class="sb-feedback" id="${sbId}_fb"></div>
-          <button class="sb-reset" onclick="resetSB('${sbId}','${JSON.stringify(g.sb.slots).replace(/"/g,"'")}','${JSON.stringify(g.sb.choices).replace(/"/g,"'")}','${JSON.stringify(g.sb.answer).replace(/"/g,"'")}')">↺ Reset</button>
+          <button class="sb-reset" onclick="resetSB('${sbId}','${g.id}')">↺ Reset</button>
         </div>
 
         <div class="fitb-wrap" id="${fitbId}">
@@ -1192,38 +1194,53 @@ function renderGrammar(){
           </div>
           <div style="font-size:.8rem;color:var(--muted);margin-bottom:.5rem;">Translation: "${g.fitb.translation}"</div>
           <div class="fitb-opts">
-                ${g.fitb.opts.map(o=>`
-                  <button class="fitb-opt" onclick="fillBlank('${fitbId}','${o}')">
-                    <div class="fitb-hz">${o}</div>
-                    <div class="gram-py ${showGramPy?'':'hidden'}">${getPy(o)}</div>
-                  </button>`).join('')}
-              </div>
+            ${g.fitb.opts.map(o=>`
+              <button class="fitb-opt" onclick="fillBlank('${fitbId}','${o}')">
+                <div class="fitb-hz">${o}</div>
+                <div class="gram-py ${showGramPy?'':'hidden'}">${getPy(o)}</div>
+              </button>`).join('')}
+          </div>
           <button class="fitb-check" onclick="checkFitb('${fitbId}','${g.fitb.answer}','${g.fitb.translation}')">Check ✓</button>
           <div style="margin-top:.5rem;min-height:1.4rem;font-size:.9rem;font-weight:bold;" id="${fitbId}_fb"></div>
         </div>
-      </div>`;
+      </div>`; // تم إغلاق الـ gram-body هنا في النهاية تماماً
     list.appendChild(card);
   });
 }
 
+
 function toggleGram(card){card.classList.toggle('open');}
 
 let sbState={};
-function sbClick(id,word,chip,answerJson){
-  const answer=JSON.parse(answerJson.replace(/'/g,'"'));
+function sbClick(id,word,chip,grammarId){
+  const rule = grammarData.find(g => g.id === parseInt(grammarId));
+  const answer = rule.sb.answer;
   const slots=document.querySelectorAll(`#${id}_slots .sb-slot`);
+  
   if(!sbState[id]) sbState[id]=[];
   const empty=[...slots].findIndex((s,i)=>{
     const ans=answer[i];
     if(ans==='，'||ans==='？'||ans==='！') return false;
     return !sbState[id][i];
   });
+  
   if(empty===-1) return;
+  
   sbState[id][empty]=word;
   chip.classList.add('used');
   const slot=slots[empty];
   slot.innerHTML = `<div class="sb-hz">${word}</div><div class="gram-py ${showGramPy?'':'hidden'}">${getPy(word)}</div>`;
   slot.classList.add('filled');
+  
+  // التحقق الفوري للون المربع (أخضر أو أحمر)
+  if (word === answer[empty]) {
+    slot.classList.add('correct-slot');
+    slot.classList.remove('wrong-slot');
+  } else {
+    slot.classList.add('wrong-slot');
+    slot.classList.remove('correct-slot');
+  }
+  
   checkSBAnswer(id,answer,slots);
 }
 
@@ -1237,7 +1254,6 @@ function toggleGrammarPy() {
   });
 }
 
-
 function sbRemove(id,pos){
   if(!sbState[id]||!sbState[id][pos]) return;
   const word=sbState[id][pos];
@@ -1247,21 +1263,31 @@ function sbRemove(id,pos){
   slots[pos].classList.remove('filled','correct-slot','wrong-slot');
   const chips=document.querySelectorAll(`#${id}_chips .sb-chip`);
   chips.forEach(c=>{if(c.dataset.word===word&&c.classList.contains('used')){c.classList.remove('used');return;}});
+  
+  const fb=document.getElementById(id+'_fb');
+  if(fb) fb.textContent=''; // يمسح رسالة الخطأ عند إزالة كلمة
 }
 
 function checkSBAnswer(id,answer,slots){
   const filled=Object.keys(sbState[id]||{}).length;
   const needed=answer.filter(a=>a!=='，'&&a!=='？'&&a!=='！').length;
-  if(filled<needed) return;
+  const fb=document.getElementById(id+'_fb');
+  
+  if(filled<needed) {
+    if(fb) fb.textContent = ''; 
+    return;
+  }
+  
   let allCorrect=true;
   answer.forEach((a,i)=>{
     if(a==='，'||a==='？'||a==='！') return;
-    if(sbState[id][i]===a) slots[i].classList.add('correct-slot');
-    else{slots[i].classList.add('wrong-slot');allCorrect=false;}
+    if(sbState[id][i]!==a) allCorrect=false;
   });
-  const fb=document.getElementById(id+'_fb');
-  fb.textContent=allCorrect?'✅ Perfect! Great sentence!':'❌ Not quite. Check the red slots and try again.';
-  fb.className='sb-feedback '+(allCorrect?'ok':'err');
+  
+  if(fb) {
+    fb.textContent = allCorrect ? '✅ Perfect! Great sentence!' : '❌ Not quite. Click the red slots to remove them and try again.';
+    fb.className = 'sb-feedback ' + (allCorrect ? 'ok' : 'err');
+  }
 }
 
 function resetSB(id,grammarId){
@@ -1284,8 +1310,6 @@ function resetSB(id,grammarId){
   document.getElementById(id+'_fb').textContent='';
 }
 
-
-
 function fillBlank(id,word){document.getElementById(id+'_inp').value=word;}
 function checkFitb(id,answer,translation){
   const inp=document.getElementById(id+'_inp');
@@ -1294,6 +1318,7 @@ function checkFitb(id,answer,translation){
   if(val===answer){inp.classList.add('correct');inp.classList.remove('wrong');fb.textContent='✅ Correct! '+translation;fb.style.color='var(--green)';}
   else{inp.classList.add('wrong');inp.classList.remove('correct');fb.textContent='❌ Try again. Hint: '+answer[0]+'...';fb.style.color='var(--red)';}
 }
+
 
 // ════ DICTATION ════
 function setDictMode(m,btn){
@@ -1315,7 +1340,12 @@ function dictNext(){
   if(dictMode==='pinyin'){
     document.getElementById('dictHz').textContent=dictWord.hanzi;
     document.getElementById('dictHz').classList.remove('hidden');
-    document.getElementById('dictInputArea').innerHTML=`<input class="dict-input" id="dictInp" placeholder="Type pinyin..." onkeydown="if(event.key==='Enter')checkDictPinyin()">`;
+    // 👇 هنا تم إضافة زر التحقق تحت مربع النص 👇
+    document.getElementById('dictInputArea').innerHTML=`
+      <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+        <input class="dict-input" id="dictInp" placeholder="Type pinyin..." onkeydown="if(event.key==='Enter')checkDictPinyin()">
+        <button class="dict-btn reveal" style="background:var(--green); color:white;" onclick="checkDictPinyin()">Check ✓</button>
+      </div>`;
     setTimeout(()=>document.getElementById('dictInp')?.focus(),100);
   } else if(dictMode==='meaning'){
     document.getElementById('dictHz').textContent=dictWord.hanzi;
@@ -1337,6 +1367,7 @@ function dictNext(){
   }
   updateDictScore();
 }
+
 
 function dictPlay(){if(dictWord) speak(dictWord.hanzi);}
 function dictReveal(){

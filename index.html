@@ -23,8 +23,8 @@ header{background:var(--ink);color:var(--paper);padding:1rem 1.5rem;position:sti
 .logo-hanzi{font-family:'Noto Serif SC',serif;font-size:2rem;font-weight:900;color:var(--red-l);text-shadow:0 0 20px rgba(231,76,60,.4);line-height:1;}
 .logo-txt{font-size:1.3rem;font-weight:300;letter-spacing:.1em;color:var(--cream);}
 .logo-sub{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.25em;color:var(--gold-l);text-transform:uppercase;}
-.nav-tabs{display:flex;background:rgba(255,255,255,.08);border-radius:10px;padding:.25rem;gap:.2rem;}
-.nav-tab{background:transparent;border:none;color:rgba(245,240,232,.6);padding:.45rem .9rem;font-family:'DM Mono',monospace;font-size:.7rem;cursor:pointer;border-radius:7px;transition:all .2s;text-transform:uppercase;white-space:nowrap;}
+.nav-tabs{display:flex; flex-wrap:wrap; justify-content:center; background:rgba(255,255,255,.08); border-radius:10px; padding:.25rem; gap:.2rem;}
+.nav-tab{background:transparent;border:none;color:rgba(245,240,232,.6);padding:.45rem .9rem;font-family:'DM Mono',monospace;font-size:.7rem;cursor:pointer;border-radius:7px;transition:all .2s;text-transform:uppercase;white-space:nowrap; flex-grow:1; text-align:center;}
 .nav-tab.active,.nav-tab:hover{background:var(--red);color:#fff;}
 .nav-tab.active{font-weight:bold;}
 .streak-pill{background:linear-gradient(135deg,#e67e22,var(--red));color:#fff;padding:.2rem .6rem;border-radius:12px;font-size:.68rem;font-weight:bold;font-family:'DM Mono',monospace;}
@@ -278,7 +278,10 @@ header{background:var(--ink);color:var(--paper);padding:1rem 1.5rem;position:sti
 ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--cream);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
 @media(max-width:768px){
-  .hdr{gap:.5rem;}.logo-txt{font-size:1rem;}.nav-tab{padding:.38rem .6rem;font-size:.62rem;}
+  .hdr{gap:.5rem;} .logo-txt{font-size:1rem;}
+  .nav-tabs { width: 100%; gap: 4px; padding: 4px; }
+  .nav-tab { flex: 1 1 calc(30% - 4px); padding: .45rem .2rem; font-size: .65rem; }
+  .nav-tab:nth-child(4), .nav-tab:nth-child(5) { flex: 1 1 calc(45% - 4px); }
   .page{padding:1rem 1rem 3rem;}.cards-grid{grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:.75rem;}
   .gram-grid{grid-template-columns:1fr;}.modal-hanzi{font-size:3.2rem;}.prog-pill{display:none;}
   #dashPage .dash-charts{grid-template-columns:1fr!important;}
